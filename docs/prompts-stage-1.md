@@ -6,3 +6,4 @@
 | 2 | GPT-5.6 Sol | Ayudame a realizar la segunda etapa del commit 2, recuerdame la lista de los commit y que pedia en lista el stage 1 | src/main/java/cl/ucn/disc/arqsist/library/service/BookService.java |
 | 3 | GPT-5.6 Sol | Comencemos con la distribución que planificamos ahora con el commit 3, empezando por que tenemos que hacer y la solución propuesta | src/main/java/cl/ucn/disc/arqsist/library/db/Database.java |
 | 4 | GPT-5.6 Sol | Explicame en que consiste el commit 4, que problema de identifica, que consecuencia tiene y que solucion propuesta podemos obtener | src/main/resources/public/app.js, src/main/resources/logback.xml |
+| 5 | GPT-5.6 Sol | Revisemos el commit 5, este caso veremos el archivo plant uml, comenzemos diseñando una solucion propuesta | docs/class-diagram.puml |
