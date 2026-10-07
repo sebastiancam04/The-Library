@@ -13,58 +13,94 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 
 /**
- * Persists a java.time.LocalDate as an ISO-8601 string.
+ * Persists a {@link LocalDate} as an ISO-8601 string.
  */
 public final class LocalDatePersister extends BaseDataType {
 
     /**
-     * The singleton instance.
+     * Singleton instance of the persister.
      */
-    private static final LocalDatePersister SINGLETON = new LocalDatePersister();
+    private static final LocalDatePersister SINGLETON =
+            new LocalDatePersister();
 
     /**
-     * @return The singleton instance.
+     * Returns the singleton instance.
+     *
+     * @return the singleton instance.
      */
     public static LocalDatePersister getSingleton() {
         return SINGLETON;
     }
 
     /**
-     * The constructor.
+     * Creates the LocalDate persister.
      */
     private LocalDatePersister() {
         super(SqlType.STRING, new Class<?>[]{LocalDate.class});
     }
 
     /**
-     * {@inheritDoc}
+     * Converts the default database value to its SQL argument representation.
+     *
+     * @param fieldType information about the mapped field.
+     * @param defaultStr default value represented as a string.
+     * @return the default string value.
      */
     @Override
-    public Object parseDefaultString(FieldType fieldType, String defaultStr) {
+    public Object parseDefaultString(
+            FieldType fieldType,
+            String defaultStr
+    ) {
         return defaultStr;
     }
 
     /**
-     * {@inheritDoc}
+     * Reads the SQL value from the database result.
+     *
+     * @param fieldType information about the mapped field.
+     * @param results database query results.
+     * @param columnPos position of the column in the result.
+     * @return the SQL argument as a string.
+     * @throws SQLException if the database value cannot be read.
      */
     @Override
-    public Object resultToSqlArg(FieldType fieldType, DatabaseResults results, int columnPos) throws SQLException {
+    public Object resultToSqlArg(
+            FieldType fieldType,
+            DatabaseResults results,
+            int columnPos
+    ) throws SQLException {
         return results.getString(columnPos);
     }
 
     /**
-     * {@inheritDoc}
+     * Converts a stored SQL argument into a {@link LocalDate}.
+     *
+     * @param fieldType information about the mapped field.
+     * @param sqlArg SQL argument containing the date string.
+     * @param columnPos position of the column in the result.
+     * @return the parsed LocalDate.
      */
     @Override
-    public Object sqlArgToJava(FieldType fieldType, Object sqlArg, int columnPos) {
+    public Object sqlArgToJava(
+            FieldType fieldType,
+            Object sqlArg,
+            int columnPos
+    ) {
         return LocalDate.parse((String) sqlArg);
     }
 
     /**
-     * {@inheritDoc}
+     * Converts a {@link LocalDate} into its SQL string representation.
+     *
+     * @param fieldType information about the mapped field.
+     * @param javaObject LocalDate value to persist.
+     * @return the ISO-8601 string representation of the date.
      */
     @Override
-    public Object javaToSqlArg(FieldType fieldType, Object javaObject) {
+    public Object javaToSqlArg(
+            FieldType fieldType,
+            Object javaObject
+    ) {
         return javaObject.toString();
     }
 }

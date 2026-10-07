@@ -1,9 +1,19 @@
 # AI Prompt Log - Stage 1
 
-| Number | Model | Exact prompt text | Files changed |
-|---|---|---|---|
-| 1 | GPT-5.6 Sol | Ayudame a integrar el commit 1 para el refactor | src/main/java/cl/ucn/disc/arqsist/library/dao/BaseDao.java, src/main/java/cl/ucn/disc/arqsist/library/dao/BookDao.java, src/main/java/cl/ucn/disc/arqsist/library/dao/LoanDao.java, src/main/java/cl/ucn/disc/arqsist/library/dao/MemberDao.java, src/main/java/cl/ucn/disc/arqsist/library/dao/ReservationDao.java |
-| 2 | GPT-5.6 Sol | Ayudame a realizar la segunda etapa del commit 2, recuerdame la lista de los commit y que pedia en lista el stage 1 | src/main/java/cl/ucn/disc/arqsist/library/service/BookService.java |
-| 3 | GPT-5.6 Sol | Comencemos con la distribución que planificamos ahora con el commit 3, empezando por que tenemos que hacer y la solución propuesta | src/main/java/cl/ucn/disc/arqsist/library/db/Database.java |
-| 4 | GPT-5.6 Sol | Explicame en que consiste el commit 4, que problema de identifica, que consecuencia tiene y que solucion propuesta podemos obtener | src/main/resources/public/app.js, src/main/resources/logback.xml |
-| 5 | GPT-5.6 Sol | Revisemos el commit 5, este caso veremos el archivo plant uml, comenzemos diseñando una solucion propuesta | docs/class-diagram.puml |
+| Number | Model | Exact prompt text | Purpose | Files changed |
+|---|---|---|---|---|
+| 1 | GPT-5.6 Sol | Ayudame a integrar el commit 1 para el refactor | Implementar BaseDao y refactorizar los cuatro DAO | src/main/java/cl/ucn/disc/arqsist/library/dao/BaseDao.java, src/main/java/cl/ucn/disc/arqsist/library/dao/BookDao.java, src/main/java/cl/ucn/disc/arqsist/library/dao/LoanDao.java, src/main/java/cl/ucn/disc/arqsist/library/dao/MemberDao.java, src/main/java/cl/ucn/disc/arqsist/library/dao/ReservationDao.java |
+| 2 | GPT-5.6 Sol | Ayudame a realizar la segunda etapa del commit 2, recuerdame la lista de los commit y que pedia en lista el stage 1 | Implementar la protección de inventario en BookService | src/main/java/cl/ucn/disc/arqsist/library/service/BookService.java |
+| 3 | GPT-5.6 Sol | Comencemos con la distribución que planificamos ahora con el commit 3, empezando por que tenemos que hacer y la solución propuesta | Analizar e implementar los cambios del seed de la base de datos | src/main/java/cl/ucn/disc/arqsist/library/db/Database.java |
+| 4 | GPT-5.6 Sol | como debe de quedar la solucion dame codigo enteros | Obtener la implementación completa de Database.java para el nuevo seed | src/main/java/cl/ucn/disc/arqsist/library/db/Database.java |
+| 5 | GPT-5.6 Sol | Explicame en que consiste el commit 4, que problema de identifica, que consecuencia tiene y que solucion propuesta podemos obtener | Implementar el cálculo de overdue en el navegador y configurar logging DEBUG | src/main/resources/public/app.js, src/main/resources/logback.xml |
+| 6 | GPT-5.6 Sol | Revisemos el commit 5, este caso veremos el archivo plant uml, comenzemos diseñando una solucion propuesta | Actualizar el diagrama de clases para representar la arquitectura de Stage 1 | docs/class-diagram.puml |
+| 7 | GPT-5.6 Sol | corrijamos cada error visto | Corregir LoanPolicy y sus puntos de uso durante la revisión final de Stage 1 | src/main/java/cl/ucn/disc/arqsist/library/service/LoanPolicy.java, src/main/java/cl/ucn/disc/arqsist/library/service/MemberService.java, src/main/java/cl/ucn/disc/arqsist/library/service/ReservationService.java |
+| 8 | GPT-5.6 Sol | empezmeos a arreglar los estados faltante | Corregir elementos pendientes y completar JavaDoc de LoanService | src/main/java/cl/ucn/disc/arqsist/library/service/LoanService.java |
+| 9 | GPT-5.6 Sol | siguiente | Completar JavaDoc de BookService | src/main/java/cl/ucn/disc/arqsist/library/service/BookService.java |
+| 10 | GPT-5.6 Sol | siguiente | Completar JavaDoc del modelo Book | src/main/java/cl/ucn/disc/arqsist/library/model/Book.java |
+| 11 | GPT-5.6 Sol | siguiente | Completar JavaDoc del modelo Member | src/main/java/cl/ucn/disc/arqsist/library/model/Member.java |
+| 12 | GPT-5.6 Sol | este es mi localdate persister.java | Revisar LocalDatePersister y completar su JavaDoc sin modificar la lógica | src/main/java/cl/ucn/disc/arqsist/library/db/LocalDatePersister.java |
+| 13 | GPT-5.6 Sol | DueDateDuplicationTest.java | Revisar DueDateDuplicationTest y completar su JavaDoc sin modificar la lógica del test | src/test/java/cl/ucn/disc/arqsist/library/DueDateDuplicationTest.java |
+| 14 | GPT-5.6 Sol | aqui esta el siguiente, javadoc es documentar? | Explicar JavaDoc y completar la documentación de TransactionBugTest | src/test/java/cl/ucn/disc/arqsist/library/TransactionBugTest.java |
+| 15 | GPT-5.6 Sol | actualizemos el plantUML ya que implementamos hartos cambios y muéstrame el .puml, con eso en cuenta tambien actualizar los prompt log y revisar el error que mencionas de .idea/vcs.xml | Sincronizar el diagrama final con el código, actualizar el prompt log y revisar la configuración local de IntelliJ | docs/class-diagram.puml, docs/prompts-stage-1.md |

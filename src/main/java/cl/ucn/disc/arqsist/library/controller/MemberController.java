@@ -8,16 +8,43 @@ import cl.ucn.disc.arqsist.library.model.Member;
 import cl.ucn.disc.arqsist.library.service.MemberService;
 import io.javalin.config.JavalinConfig;
 
+/**
+ * Registers the HTTP routes related to members.
+ */
 public final class MemberController {
 
+    /**
+     * Service used for member operations.
+     */
     private final MemberService service;
 
+    /**
+     * Creates the member controller.
+     *
+     * @param service service used for member operations.
+     */
     public MemberController(MemberService service) {
         this.service = service;
     }
 
+    /**
+     * Registers the member routes in Javalin.
+     *
+     * @param config Javalin configuration used to register the routes.
+     */
     public void register(JavalinConfig config) {
-        config.routes.get("/members", ctx -> ctx.json(service.findAll()));
-        config.routes.post("/members", ctx -> ctx.json(service.register(ctx.bodyAsClass(Member.class))));
+        config.routes.get(
+                "/members",
+                ctx -> ctx.json(service.findAll())
+        );
+
+        config.routes.post(
+                "/members",
+                ctx -> ctx.json(
+                        service.register(
+                                ctx.bodyAsClass(Member.class)
+                        )
+                )
+        );
     }
 }

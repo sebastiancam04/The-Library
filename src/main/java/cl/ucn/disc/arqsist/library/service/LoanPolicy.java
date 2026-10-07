@@ -22,19 +22,19 @@ public final class LoanPolicy {
     public static final double FEE_PER_DAY = 1.0;
 
     /**
-     * Private constructor.
+     * Private constructor to prevent instantiation.
      */
     private LoanPolicy() {
-        // nothing here.
+        // Utility class.
     }
 
     /**
-     * Computes the due date of a loan.
+     * Calculates the due date of a loan.
      *
-     * @param loanDate the date of the loan.
-     * @return the due date.
+     * @param loanDate the date on which the loan starts.
+     * @return the due date of the loan.
      */
-    public static LocalDate computeDueDate(LocalDate loanDate) {
+    public static LocalDate dueDate(LocalDate loanDate) {
         return loanDate.plusDays(DUE_DAYS);
     }
 }

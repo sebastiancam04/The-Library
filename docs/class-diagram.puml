@@ -1,7 +1,7 @@
 @startuml
 
 ' Library monolith: class diagram
-' Stage 1 - Data layer and policy
+' Stage 1 - Final data layer and policy
 ' Layered: controller -> service -> dao -> model
 ' Persistence via ORMLite
 
@@ -79,7 +79,6 @@ package "service" <<service>> {
   }
 
   class LoanService {
-    + {static} int DUE_DAYS = 21
     - LoanDao loanDao
     - BookDao bookDao
     + LoanService(LoanDao, BookDao)
