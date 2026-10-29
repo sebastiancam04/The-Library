@@ -1,3 +1,4 @@
+
 /*
  * Copyright (c) 2026. Arquitectura de Sistemas, DISC, UCN, Antofagasta.
  */
@@ -7,68 +8,42 @@ package cl.ucn.disc.arqsist.library.controller;
 import cl.ucn.disc.arqsist.library.service.LoanService;
 import io.javalin.config.JavalinConfig;
 
-import java.util.Objects;
-
 /**
- * Registers the HTTP endpoints for loans.
+ * Registers HTTP routes for lending and returns through the loan service.
  */
 public final class LoanController {
 
-    /**
-     * Service responsible for all loan operations.
-     */
+    /** Service responsible for loan operations. */
     private final LoanService loanService;
 
     /**
      * Creates the loan controller.
      *
-     * @param loanService service responsible for loans.
+     * @param loanService service responsible for loan operations.
      */
     public LoanController(LoanService loanService) {
         this.loanService = loanService;
     }
 
     /**
-     * Registers loan routes.
+     * Registers loan routes in Javalin.
      *
-     * @param config Javalin configuration for route registration.
+     * @param config Javalin configuration used to register routes.
      */
     public void register(JavalinConfig config) {
         config.routes.post("/loans", ctx -> {
-            int memberId = Integer.parseInt(
-                    Objects.requireNonNull(
-                            ctx.queryParam("memberId")
-                    )
-            );
+            int memberId = Integer.parseInt(ctx.queryParam("memberId"));
+            int bookId = Integer.parseInt(ctx.queryParam("bookId"));
 
-            int bookId = Integer.parseInt(
-                    Objects.requireNonNull(
-                            ctx.queryParam("bookId")
-                    )
-            );
-
-            ctx.json(
-                    loanService.checkout(memberId, bookId)
-            );
+            ctx.json(loanService.checkout(memberId, bookId));
         });
 
-        config.routes.get(
-                "/loans",
-                ctx -> ctx.json(loanService.findAll())
-        );
+        config.routes.get("/loans", ctx -> ctx.json(loanService.findAll()));
 
-        config.routes.post(
-                "/loans/{id}/return",
-                ctx -> ctx.json(
-                        loanService.returnLoan(
-                                Integer.parseInt(ctx.pathParam("id"))
-                        )
-                )
-        );
+        config.routes.post("/loans/{id}/return", ctx -> ctx.json(
+                loanService.returnLoan(Integer.parseInt(ctx.pathParam("id")))
+        ));
 
-        config.routes.get(
-                "/loans/overdue",
-                ctx -> ctx.json(loanService.overdueLoans())
-        );
+        config.routes.get("/loans/overdue", ctx -> ctx.json(loanService.overdueLoans()));
     }
 }
