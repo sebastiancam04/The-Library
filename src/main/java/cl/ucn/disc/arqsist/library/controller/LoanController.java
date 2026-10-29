@@ -5,44 +5,33 @@
 package cl.ucn.disc.arqsist.library.controller;
 
 import cl.ucn.disc.arqsist.library.service.LoanService;
-import cl.ucn.disc.arqsist.library.service.MemberService;
 import io.javalin.config.JavalinConfig;
 
 import java.util.Objects;
 
 /**
- * Registers the HTTP routes related to loans.
+ * Registers the HTTP endpoints for loans.
  */
 public final class LoanController {
 
     /**
-     * Service used for member operations and checkout.
-     */
-    private final MemberService memberService;
-
-    /**
-     * Service used for loan operations.
+     * Service responsible for all loan operations.
      */
     private final LoanService loanService;
 
     /**
      * Creates the loan controller.
      *
-     * @param memberService service used for member operations and checkout.
-     * @param loanService service used for loan operations.
+     * @param loanService service responsible for loans.
      */
-    public LoanController(
-            MemberService memberService,
-            LoanService loanService
-    ) {
-        this.memberService = memberService;
+    public LoanController(LoanService loanService) {
         this.loanService = loanService;
     }
 
     /**
-     * Registers the loan routes in Javalin.
+     * Registers loan routes.
      *
-     * @param config Javalin configuration used to register the routes.
+     * @param config Javalin configuration for route registration.
      */
     public void register(JavalinConfig config) {
         config.routes.post("/loans", ctx -> {
@@ -59,7 +48,7 @@ public final class LoanController {
             );
 
             ctx.json(
-                    memberService.checkout(memberId, bookId)
+                    loanService.checkout(memberId, bookId)
             );
         });
 

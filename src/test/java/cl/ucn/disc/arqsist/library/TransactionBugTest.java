@@ -7,47 +7,48 @@ package cl.ucn.disc.arqsist.library;
 import cl.ucn.disc.arqsist.library.dao.BookDao;
 import cl.ucn.disc.arqsist.library.dao.LoanDao;
 import cl.ucn.disc.arqsist.library.dao.MemberDao;
+
 import cl.ucn.disc.arqsist.library.db.Database;
 import cl.ucn.disc.arqsist.library.model.Book;
-import cl.ucn.disc.arqsist.library.service.MemberService;
+
+import cl.ucn.disc.arqsist.library.service.BookService;
+import cl.ucn.disc.arqsist.library.service.LoanService;
+import cl.ucn.disc.arqsist.library.service.NotFoundException;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.time.Clock;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
- * Verifies that a failed checkout does not leave
- * partial changes in the database.
- *
- * <p>This test exposes the missing transaction problem
- * that is fixed during Stage 2.</p>
+ * Checks that a failed checkout does not corrupt the book inventory.
  */
 class TransactionBugTest {
 
     /**
-     * DAO used to create and reload books during the test.
+     * DAO for creating and reloading books.
      */
     private BookDao bookDao;
 
     /**
-     * Service used to perform the checkout operation.
+     * Service that performs checkout transactions.
      */
-    private MemberService memberService;
+    private LoanService loanService;
 
     /**
-     * Creates an in-memory database and initializes the
-     * dependencies required by the test.
+     * Initializes the database and its services.
      *
-     * @throws Exception if the test environment cannot be initialized.
+     * @throws Exception if initialization fails.
      */
     @BeforeEach
     void setUp() throws Exception {
-        Database db =
-                new Database("jdbc:sqlite::memory:");
 
-        bookDao =
-                new BookDao(db.connectionSource());
+        Database db = new Database("jdbc:sqlite::memory:");
+
+        bookDao = new BookDao(db.connectionSource());
 
         MemberDao memberDao =
                 new MemberDao(db.connectionSource());
@@ -55,22 +56,18 @@ class TransactionBugTest {
         LoanDao loanDao =
                 new LoanDao(db.connectionSource());
 
-        memberService =
-                new MemberService(
-                        memberDao,
-                        bookDao,
-                        loanDao
-                );
+        loanService = new LoanService(
+                loanDao,
+                memberDao,
+                new BookService(bookDao),
+                Clock.systemDefaultZone()
+        );
     }
 
     /**
-     * Verifies that a failed checkout does not leave the
-     * available copy count modified.
+     * Verifies a missing member cannot cause inventory to decrease.
      *
-     * <p>The checkout intentionally uses a member identifier
-     * that does not exist.</p>
-     *
-     * @throws Exception if the test operations cannot be completed.
+     * @throws Exception if the test operation cannot be completed.
      */
     @Test
     void checkoutLeavesNoPartialStateOnFailure() throws Exception {
@@ -85,15 +82,14 @@ class TransactionBugTest {
         bookDao.create(book);
 
         assertThrows(
-                Exception.class,
-                () -> memberService.checkout(
+                NotFoundException.class,
+                () -> loanService.checkout(
                         9999,
                         book.getId()
                 )
         );
 
-        Book reloaded =
-                bookDao.findById(book.getId());
+        Book reloaded = bookDao.findById(book.getId());
 
         assertEquals(
                 reloaded.getTotalCopies(),

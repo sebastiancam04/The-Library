@@ -8,52 +8,58 @@ import cl.ucn.disc.arqsist.library.dao.BookDao;
 import cl.ucn.disc.arqsist.library.dao.LoanDao;
 import cl.ucn.disc.arqsist.library.dao.MemberDao;
 import cl.ucn.disc.arqsist.library.dao.ReservationDao;
+
 import cl.ucn.disc.arqsist.library.db.Database;
+
 import cl.ucn.disc.arqsist.library.model.Book;
 import cl.ucn.disc.arqsist.library.model.Loan;
 import cl.ucn.disc.arqsist.library.model.Member;
 import cl.ucn.disc.arqsist.library.model.Reservation;
-import cl.ucn.disc.arqsist.library.service.MemberService;
+
+import cl.ucn.disc.arqsist.library.service.BookService;
+import cl.ucn.disc.arqsist.library.service.LoanService;
 import cl.ucn.disc.arqsist.library.service.ReservationService;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.time.Clock;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * Verifies that checkout and reservation fulfillment use
- * the same loan period.
+ * Checks that checkout and reservation fulfillment use the same loan period.
  */
 class DueDateDuplicationTest {
 
     /**
-     * Service used to create loans through checkout.
+     * Service that creates loans through checkout.
      */
-    private MemberService memberService;
+    private LoanService loanService;
 
     /**
-     * Service used to create and fulfill reservations.
+     * Service that fulfills reservations.
      */
     private ReservationService reservationService;
 
     /**
-     * Book used by the test.
+     * Book used for both flows.
      */
     private Book book;
 
     /**
-     * Member used by the test.
+     * Member used for both flows.
      */
     private Member member;
 
     /**
-     * Creates an in-memory database and initializes the
-     * services and entities required by the test.
+     * Creates an in-memory database with the required services.
      *
-     * @throws Exception if the test environment cannot be initialized.
+     * @throws Exception if initialization fails.
      */
     @BeforeEach
     void setUp() throws Exception {
+
         Database db = new Database("jdbc:sqlite::memory:");
 
         BookDao bookDao =
@@ -68,26 +74,25 @@ class DueDateDuplicationTest {
         ReservationDao reservationDao =
                 new ReservationDao(db.connectionSource());
 
-        memberService =
-                new MemberService(
-                        memberDao,
-                        bookDao,
-                        loanDao
-                );
+        loanService = new LoanService(
+                loanDao,
+                memberDao,
+                new BookService(bookDao),
+                Clock.systemDefaultZone()
+        );
 
-        reservationService =
-                new ReservationService(
-                        reservationDao,
-                        bookDao,
-                        memberDao,
-                        loanDao
-                );
+        reservationService = new ReservationService(
+                reservationDao,
+                bookDao,
+                memberDao,
+                loanDao
+        );
 
         book = new Book(
                 "Design Patterns",
                 "Gamma et al.",
                 "9780201633610",
-                1
+                2
         );
 
         bookDao.create(book);
@@ -101,29 +106,26 @@ class DueDateDuplicationTest {
     }
 
     /**
-     * Verifies that a loan created through checkout and a loan
-     * created by fulfilling a reservation have the same due date.
+     * Verifies the due-date policy is consistent for both lending paths.
      *
-     * @throws Exception if the test operations cannot be completed.
+     * @throws Exception if an operation fails.
      */
     @Test
     void checkoutAndFulfillUseTheSameLoanPeriod() throws Exception {
-        Loan fromCheckout =
-                memberService.checkout(
-                        member.getId(),
-                        book.getId()
-                );
 
-        Reservation reservation =
-                reservationService.reserve(
-                        book.getId(),
-                        member.getId()
-                );
+        Loan fromCheckout = loanService.checkout(
+                member.getId(),
+                book.getId()
+        );
 
-        Loan fromFulfill =
-                reservationService.fulfill(
-                        reservation.getId()
-                );
+        Reservation reservation = reservationService.reserve(
+                book.getId(),
+                member.getId()
+        );
+
+        Loan fromFulfill = reservationService.fulfill(
+                reservation.getId()
+        );
 
         assertEquals(
                 fromCheckout.getDueDate(),

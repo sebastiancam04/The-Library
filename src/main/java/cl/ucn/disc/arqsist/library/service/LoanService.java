@@ -4,63 +4,123 @@
 
 package cl.ucn.disc.arqsist.library.service;
 
-import cl.ucn.disc.arqsist.library.dao.BookDao;
 import cl.ucn.disc.arqsist.library.dao.LoanDao;
+import cl.ucn.disc.arqsist.library.dao.MemberDao;
 import cl.ucn.disc.arqsist.library.model.Book;
 import cl.ucn.disc.arqsist.library.model.Loan;
+import cl.ucn.disc.arqsist.library.model.Member;
 
 import java.sql.SQLException;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 /**
- * Provides operations related to library loans.
+ * Coordinates book loans and their changes to the inventory.
  */
 public final class LoanService {
 
     /**
-     * DAO used to access loans.
+     * DAO responsible for loans and their transactions.
      */
     private final LoanDao loanDao;
 
     /**
-     * DAO used to access books.
+     * DAO used to look up members.
      */
-    private final BookDao bookDao;
+    private final MemberDao memberDao;
+
+    /**
+     * Service that owns inventory updates.
+     */
+    private final BookService bookService;
+
+    /**
+     * Clock injected to make date-dependent operations testable.
+     */
+    private final Clock clock;
 
     /**
      * Creates the loan service.
      *
-     * @param loanDao DAO used to access loans.
-     * @param bookDao DAO used to access books.
+     * @param loanDao DAO for loan records and transactions.
+     * @param memberDao DAO for member lookup.
+     * @param bookService service responsible for book inventory.
+     * @param clock clock used to determine the current date.
      */
     public LoanService(
             LoanDao loanDao,
-            BookDao bookDao
+            MemberDao memberDao,
+            BookService bookService,
+            Clock clock
     ) {
         this.loanDao = loanDao;
-        this.bookDao = bookDao;
+        this.memberDao = memberDao;
+        this.bookService = bookService;
+        this.clock = clock;
     }
 
     /**
-     * Returns all loans stored in the library.
+     * Creates a loan and decreases inventory atomically.
      *
-     * @return all stored loans.
-     * @throws SQLException if the operation cannot be completed.
+     * @param memberId identifier of the member borrowing the book.
+     * @param bookId identifier of the requested book.
+     * @return newly created loan.
+     * @throws NotFoundException if the member or book does not exist.
+     * @throws IllegalStateException if no copies are available.
+     * @throws SQLException if the transaction cannot be completed.
      */
-    public List<Loan> findAll() throws SQLException {
+    public Loan checkout(int memberId, int bookId) throws SQLException {
+        Member member = memberDao.findById(memberId);
+
+        if (member == null) {
+            throw new NotFoundException(
+                    "Member not found: " + memberId
+            );
+        }
+
+        Book book = bookService.findById(bookId);
+
+        if (book == null) {
+            throw new NotFoundException(
+                    "Book not found: " + bookId
+            );
+        }
+
+        LocalDate today = LocalDate.now(clock);
+
+        Loan loan = new Loan(
+                member,
+                book,
+                today,
+                LoanPolicy.dueDate(today)
+        );
+
+        return loanDao.transaction(() -> {
+            bookService.borrow(bookId);
+            loanDao.create(loan);
+            return loan;
+        });
+    }
+
+    /**
+     * Returns all stored loans.
+     *
+     * @return all loan records.
+     */
+    public List<Loan> findAll() {
         return loanDao.findAll();
     }
 
     /**
-     * Marks a loan as returned and restores one available
-     * copy of the associated book.
+     * Marks a loan as returned, computes its fee, and restores inventory
+     * in the same transaction.
      *
-     * @param loanId identifier of the loan.
-     * @return the updated loan, or null if the loan does not exist
-     *         or has already been returned.
-     * @throws SQLException if the operation cannot be completed.
+     * @param loanId identifier of the loan to return.
+     * @return returned loan, or the unchanged result if already returned;
+     *         null if the identifier does not exist.
+     * @throws SQLException if the transaction cannot be completed.
      */
     public Loan returnLoan(int loanId) throws SQLException {
         Loan loan = loanDao.findById(loanId);
@@ -69,50 +129,42 @@ public final class LoanService {
             return loan;
         }
 
-        loan.setReturned(true);
-        loan.setReturnDate(LocalDate.now());
+        LocalDate today = LocalDate.now(clock);
 
-        LocalDate due = loan.getDueDate();
-        LocalDate today = LocalDate.now();
-
-        // Calculate overdue fee if the book is returned after the due date.
         if (today.isAfter(loan.getDueDate())) {
-            long daysOverdue =
-                    ChronoUnit.DAYS.between(due, today);
+            long daysOverdue = ChronoUnit.DAYS.between(
+                    loan.getDueDate(),
+                    today
+            );
 
-            loan.setOverdueFee(daysOverdue * 1.0);
+            loan.setOverdueFee(
+                    daysOverdue * LoanPolicy.FEE_PER_DAY
+            );
         }
 
-        loanDao.update(loan);
+        return loanDao.transaction(() -> {
+            loan.setReturned(true);
+            loan.setReturnDate(today);
 
-        Book book = loan.getBook();
+            loanDao.update(loan);
+            bookService.returnCopy(loan.getBook().getId());
 
-        book.setAvailableCopies(
-                book.getAvailableCopies() + 1
-        );
-
-        bookDao.update(book);
-
-        return loan;
+            return loan;
+        });
     }
 
     /**
-     * Finds all active loans whose due date has passed.
+     * Finds active loans with due dates before today.
      *
-     * @return all overdue loans.
-     * @throws SQLException if the operation cannot be completed.
+     * @return overdue, not-yet-returned loans.
      */
-    public List<Loan> overdueLoans() throws SQLException {
-        LocalDate today = LocalDate.now();
+    public List<Loan> overdueLoans() {
+        LocalDate today = LocalDate.now(clock);
 
         return loanDao.findAll()
                 .stream()
                 .filter(loan -> !loan.isReturned())
-                .filter(
-                        loan ->
-                                loan.getDueDate()
-                                        .isBefore(today)
-                )
+                .filter(loan -> loan.getDueDate().isBefore(today))
                 .toList();
     }
 }
