@@ -1,7 +1,8 @@
+
 @startuml
 
 ' Library monolith: class diagram
-' Stage 1 - Final data layer and policy
+' Stage 2 - Services and integration (final class diagram)
 ' Layered: controller -> service -> dao -> model
 ' Persistence via ORMLite
 
@@ -40,15 +41,13 @@ package "controller" <<controller>> {
 
   class BookController {
     - BookService service
-    - BookDao dao
-    + BookController(BookService, BookDao)
+    + BookController(BookService)
     + register(JavalinConfig) : void
   }
 
   class LoanController {
-    - MemberService memberService
     - LoanService loanService
-    + LoanController(MemberService, LoanService)
+    + LoanController(LoanService)
     + register(JavalinConfig) : void
   }
 
@@ -80,11 +79,16 @@ package "service" <<service>> {
 
   class LoanService {
     - LoanDao loanDao
-    - BookDao bookDao
-    + LoanService(LoanDao, BookDao)
+    - MemberDao memberDao
+    - BookService bookService
+    - Clock clock
+    + LoanService(LoanDao, MemberDao, BookService, Clock)
+    + checkout(int, int) : Loan
     + findAll() : List<Loan>
     + returnLoan(int) : Loan
     + overdueLoans() : List<Loan>
+    - accruedFee(Loan, LocalDate) : double
+    - withAccruedFees(List<Loan>) : List<Loan>
   }
 
   class LoanPolicy {
@@ -96,25 +100,18 @@ package "service" <<service>> {
 
   class MemberService {
     - MemberDao memberDao
-    - BookDao bookDao
-    - LoanDao loanDao
-    + MemberService(MemberDao, BookDao, LoanDao)
+    + MemberService(MemberDao)
     + register(Member) : Member
     + findAll() : List<Member>
-    + checkout(int, int) : Loan
   }
 
   class ReservationService {
     - ReservationDao reservationDao
-    - BookDao bookDao
     - MemberDao memberDao
     - LoanDao loanDao
-    + ReservationService(
-        ReservationDao,
-        BookDao,
-        MemberDao,
-        LoanDao
-      )
+    - BookService bookService
+    - Clock clock
+    + ReservationService(ReservationDao, MemberDao, LoanDao, BookService, Clock)
     + reserve(int, int) : Reservation
     + findAll() : List<Reservation>
     + fulfill(int) : Loan
@@ -323,46 +320,54 @@ package "db" <<db>> {
 }
 
 
+package "java.time" {
+  class Clock <<JDK>>
+}
+
+class RuntimeException <<JDK>>
+
+
 ' ======================================================
 ' Controller -> Service
 ' ======================================================
 
 BookController "1" --> "1" BookService
-BookController "1" --> "1" BookDao
-
-LoanController "1" --> "1" MemberService
 LoanController "1" --> "1" LoanService
-
 MemberController "1" --> "1" MemberService
-
 ReservationController "1" --> "1" ReservationService
 
 
 ' ======================================================
-' Service -> DAO
+' Service -> DAO and Service -> Service
 ' ======================================================
 
 BookService "1" --> "1" BookDao
+MemberService "1" --> "1" MemberDao
 
 LoanService "1" --> "1" LoanDao
-LoanService "1" --> "1" BookDao
-
-MemberService "1" --> "1" MemberDao
-MemberService "1" --> "1" BookDao
-MemberService "1" --> "1" LoanDao
+LoanService "1" --> "1" MemberDao
+LoanService "1" --> "1" BookService
 
 ReservationService "1" --> "1" ReservationDao
-ReservationService "1" --> "1" BookDao
 ReservationService "1" --> "1" MemberDao
 ReservationService "1" --> "1" LoanDao
+ReservationService "1" --> "1" BookService
 
 
 ' ======================================================
-' Service -> Policy
+' Shared policy, clock and exceptions
 ' ======================================================
 
-MemberService ..> LoanPolicy : <<uses>>
+LoanService ..> LoanPolicy : <<uses>>
 ReservationService ..> LoanPolicy : <<uses>>
+
+LoanService --> Clock : uses
+ReservationService --> Clock : uses
+
+NotFoundException --|> RuntimeException
+BookService ..> NotFoundException : <<throws>>
+LoanService ..> NotFoundException : <<throws>>
+ReservationService ..> NotFoundException : <<throws>>
 
 
 ' ======================================================
@@ -402,6 +407,5 @@ Reservation "0..*" --> "1" Book
 
 Loan ..> LocalDatePersister : <<uses>>
 Reservation ..> LocalDatePersister : <<uses>>
-
 
 @enduml
