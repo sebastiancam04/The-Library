@@ -1,3 +1,4 @@
+
 /*
  * Copyright (c) 2026. Arquitectura de Sistemas, DISC, UCN, Antofagasta.
  */
@@ -24,36 +25,39 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Checks that checkout and reservation fulfillment use the same loan period.
+ * Verifies that checkout and reservation fulfillment
+ * use the same loan period.
  */
 class DueDateDuplicationTest {
 
-    /**
-     * Service that creates loans through checkout.
-     */
+    /** Service that creates loans through checkout. */
     private LoanService loanService;
 
-    /**
-     * Service that fulfills reservations.
-     */
+    /** Service that creates and fulfills reservations. */
     private ReservationService reservationService;
 
-    /**
-     * Book used for both flows.
-     */
+    /** DAO used to verify inventory changes. */
+    private BookDao bookDao;
+
+    /** DAO used to verify reservation state. */
+    private ReservationDao reservationDao;
+
+    /** Book used for both lending operations. */
     private Book book;
 
-    /**
-     * Member used for both flows.
-     */
+    /** Member used for both lending operations. */
     private Member member;
 
     /**
-     * Creates an in-memory database with the required services.
+     * Creates an in-memory database and initializes the services.
      *
      * @throws Exception if initialization fails.
      */
@@ -62,8 +66,7 @@ class DueDateDuplicationTest {
 
         Database db = new Database("jdbc:sqlite::memory:");
 
-        BookDao bookDao =
-                new BookDao(db.connectionSource());
+        bookDao = new BookDao(db.connectionSource());
 
         MemberDao memberDao =
                 new MemberDao(db.connectionSource());
@@ -71,21 +74,30 @@ class DueDateDuplicationTest {
         LoanDao loanDao =
                 new LoanDao(db.connectionSource());
 
-        ReservationDao reservationDao =
+        reservationDao =
                 new ReservationDao(db.connectionSource());
+
+        BookService bookService =
+                new BookService(bookDao);
+
+        Clock clock = Clock.fixed(
+                Instant.parse("2026-01-15T10:00:00Z"),
+                ZoneOffset.UTC
+        );
 
         loanService = new LoanService(
                 loanDao,
                 memberDao,
-                new BookService(bookDao),
-                Clock.systemDefaultZone()
+                bookService,
+                clock
         );
 
         reservationService = new ReservationService(
                 reservationDao,
-                bookDao,
                 memberDao,
-                loanDao
+                loanDao,
+                bookService,
+                clock
         );
 
         book = new Book(
@@ -106,7 +118,8 @@ class DueDateDuplicationTest {
     }
 
     /**
-     * Verifies the due-date policy is consistent for both lending paths.
+     * Verifies that checkout and fulfillment use the same due date
+     * and each decrease the inventory by one copy.
      *
      * @throws Exception if an operation fails.
      */
@@ -130,7 +143,29 @@ class DueDateDuplicationTest {
         assertEquals(
                 fromCheckout.getDueDate(),
                 fromFulfill.getDueDate(),
-                "the same kind of loan should have the same due date"
+                "Checkout and fulfillment must use the same due date"
+        );
+
+        assertEquals(
+                LocalDate.of(2026, 2, 5),
+                fromFulfill.getDueDate(),
+                "A loan created on January 15 must be due after 21 days"
+        );
+
+        Book updatedBook = bookDao.findById(book.getId());
+
+        assertEquals(
+                0,
+                updatedBook.getAvailableCopies(),
+                "Both lending operations must decrease inventory"
+        );
+
+        Reservation updatedReservation =
+                reservationDao.findById(reservation.getId());
+
+        assertTrue(
+                updatedReservation.isFulfilled(),
+                "The reservation must be marked as fulfilled"
         );
     }
 }

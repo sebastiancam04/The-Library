@@ -1,10 +1,10 @@
+
 /*
  * Copyright (c) 2026. Arquitectura de Sistemas, DISC, UCN, Antofagasta.
  */
 
 package cl.ucn.disc.arqsist.library.service;
 
-import cl.ucn.disc.arqsist.library.dao.BookDao;
 import cl.ucn.disc.arqsist.library.dao.LoanDao;
 import cl.ucn.disc.arqsist.library.dao.MemberDao;
 import cl.ucn.disc.arqsist.library.dao.ReservationDao;
@@ -14,74 +14,79 @@ import cl.ucn.disc.arqsist.library.model.Member;
 import cl.ucn.disc.arqsist.library.model.Reservation;
 
 import java.sql.SQLException;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
 
 /**
- * Provides operations related to book reservations.
+ * Manages library reservations and converts them into loans.
  */
 public final class ReservationService {
 
-    /**
-     * DAO used to access reservations.
-     */
+    /** Data access object for reservations and their transactions. */
     private final ReservationDao reservationDao;
 
-    /**
-     * DAO used to access books.
-     */
-    private final BookDao bookDao;
-
-    /**
-     * DAO used to access members.
-     */
+    /** Data access object for member lookup. */
     private final MemberDao memberDao;
 
-    /**
-     * DAO used to access loans.
-     */
+    /** Data access object for new loans. */
     private final LoanDao loanDao;
+
+    /** Service responsible for book lookup and inventory changes. */
+    private final BookService bookService;
+
+    /** Clock used to produce reproducible dates. */
+    private final Clock clock;
 
     /**
      * Creates the reservation service.
      *
-     * @param reservationDao DAO used to access reservations.
-     * @param bookDao DAO used to access books.
-     * @param memberDao DAO used to access members.
-     * @param loanDao DAO used to access loans.
+     * @param reservationDao DAO for reservation persistence and transactions.
+     * @param memberDao DAO for members.
+     * @param loanDao DAO for loans.
+     * @param bookService service responsible for books and inventory.
+     * @param clock clock used to determine current dates.
      */
     public ReservationService(
             ReservationDao reservationDao,
-            BookDao bookDao,
             MemberDao memberDao,
-            LoanDao loanDao
+            LoanDao loanDao,
+            BookService bookService,
+            Clock clock
     ) {
         this.reservationDao = reservationDao;
-        this.bookDao = bookDao;
         this.memberDao = memberDao;
         this.loanDao = loanDao;
+        this.bookService = bookService;
+        this.clock = clock;
     }
 
     /**
-     * Creates a reservation for a book and a member.
+     * Creates a reservation after validating its book and member.
+     * Reserving a book does not decrease available inventory until fulfillment.
      *
-     * @param bookId identifier of the book.
+     * @param bookId identifier of the requested book.
      * @param memberId identifier of the member.
-     * @return the created reservation.
-     * @throws SQLException if the operation cannot be completed.
+     * @return newly created reservation.
+     * @throws NotFoundException if the book or member does not exist.
      */
-    public Reservation reserve(
-            int bookId,
-            int memberId
-    ) throws SQLException {
+    public Reservation reserve(int bookId, int memberId) {
+        Book book = bookService.findById(bookId);
 
-        Book book = bookDao.findById(bookId);
+        if (book == null) {
+            throw new NotFoundException("Book not found: " + bookId);
+        }
+
         Member member = memberDao.findById(memberId);
+
+        if (member == null) {
+            throw new NotFoundException("Member not found: " + memberId);
+        }
 
         Reservation reservation = new Reservation(
                 member,
                 book,
-                LocalDate.now()
+                LocalDate.now(clock)
         );
 
         reservationDao.create(reservation);
@@ -90,50 +95,63 @@ public final class ReservationService {
     }
 
     /**
-     * Returns all reservations.
+     * Lists every stored reservation.
      *
-     * @return all stored reservations.
-     * @throws SQLException if the operation cannot be completed.
+     * @return stored reservations.
      */
-    public List<Reservation> findAll() throws SQLException {
+    public List<Reservation> findAll() {
         return reservationDao.findAll();
     }
 
     /**
-     * Fulfills an existing reservation and creates its loan.
+     * Fulfills a reservation and creates its loan in one transaction.
+     * The inventory decrement, loan creation and reservation update
+     * are committed together or all rolled back.
      *
-     * @param reservationId identifier of the reservation.
-     * @return the loan created from the reservation.
-     * @throws SQLException if the operation cannot be completed.
-     * @throws IllegalStateException if the reservation does not exist
-     *                               or has already been fulfilled.
+     * @param reservationId identifier of the reservation to fulfill.
+     * @return loan created from the reservation.
+     * @throws NotFoundException if the reservation does not exist.
+     * @throws IllegalStateException if it was already fulfilled or no copies remain.
+     * @throws SQLException if the database transaction cannot complete.
      */
     public Loan fulfill(int reservationId) throws SQLException {
+        return reservationDao.transaction(() -> {
 
-        Reservation reservation =
-                reservationDao.findById(reservationId);
+            Reservation reservation = reservationDao.findById(reservationId);
 
-        if (reservation == null || reservation.isFulfilled()) {
-            throw new IllegalStateException(
-                    "Reservation not available"
+            if (reservation == null) {
+                throw new NotFoundException(
+                        "Reservation not found: " + reservationId
+                );
+            }
+
+            if (reservation.isFulfilled()) {
+                throw new IllegalStateException(
+                        "Reservation already fulfilled: " + reservationId
+                );
+            }
+
+            LocalDate today = LocalDate.now(clock);
+            Book book = reservation.getBook();
+
+            // Decrease inventory through the BookService.
+            bookService.borrow(book.getId());
+
+            // Create the loan using the shared lending policy.
+            Loan loan = new Loan(
+                    reservation.getMember(),
+                    book,
+                    today,
+                    LoanPolicy.dueDate(today)
             );
-        }
 
-        reservation.setFulfilled(true);
-        reservationDao.update(reservation);
+            loanDao.create(loan);
 
-        LocalDate today = LocalDate.now();
-        LocalDate dueDate = LoanPolicy.dueDate(today);
+            // Mark the reservation as fulfilled.
+            reservation.setFulfilled(true);
+            reservationDao.update(reservation);
 
-        Loan loan = new Loan(
-                reservation.getMember(),
-                reservation.getBook(),
-                today,
-                dueDate
-        );
-
-        loanDao.create(loan);
-
-        return loan;
+            return loan;
+        });
     }
 }

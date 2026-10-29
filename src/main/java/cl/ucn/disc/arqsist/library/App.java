@@ -1,3 +1,4 @@
+
 /*
  * Copyright (c) 2026. Arquitectura de Sistemas, DISC, UCN, Antofagasta.
  */
@@ -76,9 +77,10 @@ public final class App {
         ReservationService reservationService =
                 new ReservationService(
                         reservationDao,
-                        bookDao,
                         memberDao,
-                        loanDao
+                        loanDao,
+                        bookService,
+                        clock
                 );
 
         BookController bookController =
