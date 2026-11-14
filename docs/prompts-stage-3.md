@@ -1,10 +1,11 @@
+
 # AI Prompt Log — Stage 3
 
 ## Commit 13 — gRPC Build Configuration and Protocol Definition
 
 **Model:** GPT-6
 
-**Prompt 1:**
+**Exact prompt:**
 
 Comencemos con el Commit 13 del Stage 3 de The-Library. Basándonos en el documento refactor.stage-3.pdf y en la implementación actual del proyecto, analiza los problemas identificados, sus consecuencias y plantea una solución para la configuración de Gradle y la definición del contrato member.proto.
 
@@ -24,7 +25,7 @@ Se incorporó el plugin de Protocol Buffers y las dependencias gRPC, manteniendo
 - `tasks --group application`: BUILD SUCCESSFUL.
 - `generateProto`: BUILD SUCCESSFUL.
 
-
+---
 
 ## Commit 14 - Member Service and gRPC Adapter
 
@@ -44,9 +45,10 @@ Explica las decisiones técnicas, los conceptos fundamentales de gRPC utilizados
 - docs/prompts-stage-3.md
 
 **Objective:**
-Add member retrieval by ID and implement the gRPC server adapter,
-including protobuf conversion and domain exception mapping.
 
+Add member retrieval by ID and implement the gRPC server adapter, including protobuf conversion and domain exception mapping.
+
+---
 
 ## Commit 15 - gRPC Server Integration
 
@@ -65,10 +67,10 @@ Presenta la implementación completa de los archivos involucrados, explica las d
 - docs/prompts-stage-3.md
 
 **Objective:**
-Integrate the member gRPC server into the main application,
-preserve the existing REST API, and implement graceful
-server shutdown.
 
+Integrate the member gRPC server into the main application, preserve the existing REST API, and implement graceful server shutdown.
+
+---
 
 ## Commit 16 - gRPC Client and Command Line Application
 
@@ -83,17 +85,15 @@ Presenta la implementación completa de los archivos involucrados, respetando la
 Explica las decisiones técnicas, las responsabilidades de cada componente y los conceptos fundamentales utilizados. Establece las pruebas necesarias para verificar la comunicación entre cliente y servidor, el manejo de errores y el correcto funcionamiento de los cambios antes de realizar el commit.
 
 **Files changed:**
-
 - src/main/java/cl/ucn/disc/arqsist/library/grpc/MemberClient.java
 - src/main/java/cl/ucn/disc/arqsist/library/MemberClientApp.java
 - docs/prompts-stage-3.md
 
 **Objective:**
 
-Implement the gRPC MemberClient and its command line application,
-including channel management, deadlines, protobuf conversions,
-status mapping, and connection lifecycle.
+Implement the gRPC MemberClient and its command line application, including channel management, deadlines, protobuf conversions, status mapping, and connection lifecycle.
 
+---
 
 ## Commit 17 - gRPC Round Trip Integration Test
 
@@ -112,18 +112,16 @@ Explica las decisiones técnicas, el funcionamiento de InProcessServerBuilder e 
 Establece las verificaciones necesarias para comprobar el correcto funcionamiento de la implementación y la compatibilidad con las pruebas existentes antes de realizar el commit.
 
 **Files changed:**
-
 - src/test/java/cl/ucn/disc/arqsist/library/MemberGrpcTest.java
 - docs/prompts-stage-3.md
 
 **Objective:**
 
-Implement an automated gRPC integration test using
-SQLite in-memory and in-process transport.
+Implement an automated gRPC integration test using SQLite in-memory and in-process transport.
 
-Validate member registration, listing, retrieval by ID,
-and NOT_FOUND error mapping.
+Validate member registration, listing, retrieval by ID, and NOT_FOUND error mapping.
 
+---
 
 ## Commit 18 - Member Search RPC
 
@@ -142,7 +140,6 @@ Presenta la implementación completa de los archivos involucrados y desarrolla M
 Establece las verificaciones necesarias para comprobar la funcionalidad, la compatibilidad con las pruebas anteriores y el cumplimiento de los requisitos de evaluación antes de realizar el commit.
 
 **Files changed:**
-
 - src/main/proto/member.proto
 - src/main/java/cl/ucn/disc/arqsist/library/dao/MemberDao.java
 - src/main/java/cl/ucn/disc/arqsist/library/service/MemberService.java
@@ -153,15 +150,13 @@ Establece las verificaciones necesarias para comprobar la funcionalidad, la comp
 
 **Objective:**
 
-Implement a member search RPC across the persistence,
-service, gRPC adapter and client layers.
+Implement a member search RPC across the persistence, service, gRPC adapter and client layers.
 
-Support literal substring matching, ASCII case-insensitive
-search, query normalization, ID ordering and status mapping.
+Support literal substring matching, ASCII case-insensitive search, query normalization, ID ordering and status mapping.
 
-Validate the seven acceptance cases using an in-memory
-database and in-process gRPC transport.
+Validate the seven acceptance cases using an in-memory database and in-process gRPC transport.
 
+---
 
 ## Commit 19 - gRPC API Documentation and Class Diagram
 
@@ -178,7 +173,6 @@ Actualiza el diagrama de clases PlantUML para representar correctamente los comp
 Presenta el contenido completo de los archivos involucrados, explica las decisiones de documentación y modelado arquitectónico y establece las verificaciones necesarias para comprobar que la documentación coincida con el código implementado, que el diagrama se renderice correctamente y que las pruebas anteriores continúen funcionando antes de realizar el commit.
 
 **Files changed:**
-
 - README.md
 - docs/class-diagram.puml
 - docs/prompts-stage-3.md
@@ -190,8 +184,39 @@ Document the four member RPCs, protocol contract, server/client execution and st
 Update the PlantUML class diagram to represent the gRPC adapter, client, generated Protobuf classes and SearchMembers across the existing architectural layers.
 
 **Validation plan:**
-
 - Verify that the PlantUML diagram renders correctly.
 - Verify that the README describes the implemented gRPC operations.
 - Run the complete Gradle build and existing tests.
 - Review the Git staging area before committing.
+
+---
+
+## Commit 20 - Final Stage 3 Audit
+
+**Model:** GPT-6
+
+**Exact prompt:**
+
+Comencemos con el Commit 20, correspondiente a la auditoría final del Stage 3 de The-Library. Basándonos en el documento refactor.stage-3.pdf, la rúbrica de evaluación y los commits 13 al 19 que hemos desarrollado, realiza una revisión exhaustiva del proyecto para determinar el nivel de cumplimiento de todos los requisitos establecidos por el profesor.
+
+Analiza cada apartado evaluado, incluyendo la configuración de Gradle y Protocol Buffers, el contrato member.proto, las operaciones RegisterMember, ListMembers, GetMember y SearchMembers, MemberService, MemberDao, MemberGrpcService, MemberClient, MemberClientApp, el servidor gRPC integrado con REST, las pruebas MemberGrpcTest y MemberSearchTest, la documentación README.md y el diagrama docs/class-diagram.puml.
+
+Construye una tabla de evaluación que incluya cada requisito, su puntaje máximo, la evidencia de implementación, su estado de cumplimiento y el puntaje estimado obtenido, considerando un máximo de 40 puntos. Distingue claramente los requisitos verificados de aquellos que todavía necesitan comprobación, sin asumir que una funcionalidad está correcta únicamente porque el proyecto compila.
+
+Revisa especialmente los siete casos de aceptación del ejercicio SearchMembers, los códigos de estado gRPC, los deadlines, la administración de recursos, la compatibilidad con las pruebas existentes y la correcta separación de responsabilidades entre las capas de la arquitectura.
+
+Audita también el archivo docs/prompts-stage-3.md para comprobar que estén registrados los prompts exactos utilizados, el modelo de inteligencia artificial y los archivos modificados durante cada etapa, respetando los requisitos de documentación del profesor.
+
+Identifica posibles errores, omisiones, riesgos o mejoras necesarias. Si detectas problemas, presenta las correcciones completas de los archivos involucrados, justificando cada modificación y evitando cambios innecesarios en funcionalidades que ya estén verificadas.
+
+Finalmente, establece un procedimiento de validación que incluya la compilación completa, las pruebas automatizadas, la verificación del servidor REST y gRPC, la revisión del diagrama PlantUML y el estado del repositorio Git.
+
+Explica los resultados de la auditoría, determina el porcentaje de cumplimiento técnico y la nota estimada en la escala chilena de 1,0 a 7,0 cuando exista evidencia suficiente, y prepara el cierre del Stage 3 mediante un último commit que registre las verificaciones y correcciones necesarias, excluyendo los archivos locales de configuración de IntelliJ.
+
+**Files changed:**
+- docs/stage-3-audit.md
+- docs/prompts-stage-3.md
+
+**Objective:**
+
+Audit the 40-point rubric, record evidence and outstanding checks, verify the Stage 3 implementation and close the stage without unrelated code changes.
