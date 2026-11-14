@@ -46,3 +46,25 @@ Explica las decisiones técnicas, los conceptos fundamentales de gRPC utilizados
 **Objective:**
 Add member retrieval by ID and implement the gRPC server adapter,
 including protobuf conversion and domain exception mapping.
+
+
+## Commit 15 - gRPC Server Integration
+
+**Model:** GPT-6
+
+**Exact prompt:**
+
+Comencemos con el Commit 15 del Stage 3 de The-Library. Basándonos en el documento refactor.stage-3.pdf y en la arquitectura implementada en los commits anteriores, analiza los problemas y las consecuencias de no contar con un servidor gRPC integrado en la aplicación.
+
+Desarrolla una solución para incorporar el servidor gRPC en App.java, utilizando MemberGrpcService y manteniendo el funcionamiento de la API REST existente.
+
+Presenta la implementación completa de los archivos involucrados, explica las decisiones arquitectónicas, el manejo del ciclo de vida del servidor y los mecanismos de cierre seguro. Incluye las verificaciones necesarias para comprobar la compilación, el funcionamiento simultáneo de REST y gRPC y la correcta integración antes de registrar el commit.
+
+**Files changed:**
+- src/main/java/cl/ucn/disc/arqsist/library/App.java
+- docs/prompts-stage-3.md
+
+**Objective:**
+Integrate the member gRPC server into the main application,
+preserve the existing REST API, and implement graceful
+server shutdown.
