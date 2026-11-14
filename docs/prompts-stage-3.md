@@ -161,3 +161,37 @@ search, query normalization, ID ordering and status mapping.
 
 Validate the seven acceptance cases using an in-memory
 database and in-process gRPC transport.
+
+
+## Commit 19 - gRPC API Documentation and Class Diagram
+
+**Model:** GPT-6
+
+**Exact prompt:**
+
+Comencemos con el Commit 19 del Stage 3 de The-Library. Basándonos en el documento refactor.stage-3.pdf y en la implementación actual del proyecto, analiza los problemas relacionados con la falta de documentación de la API gRPC y la desactualización del diagrama de clases, sus consecuencias y plantea una solución para actualizar README.md y docs/class-diagram.puml.
+
+Desarrolla la documentación completa de la API gRPC, incluyendo el contrato member.proto, las operaciones RegisterMember, ListMembers, GetMember y SearchMembers, los mensajes utilizados, los puertos correspondientes y las instrucciones para ejecutar el servidor y el cliente desde la terminal.
+
+Actualiza el diagrama de clases PlantUML para representar correctamente los componentes gRPC, las clases generadas desde Protocol Buffers y sus relaciones con MemberService y las entidades del dominio, manteniendo la estructura y el estilo existentes.
+
+Presenta el contenido completo de los archivos involucrados, explica las decisiones de documentación y modelado arquitectónico y establece las verificaciones necesarias para comprobar que la documentación coincida con el código implementado, que el diagrama se renderice correctamente y que las pruebas anteriores continúen funcionando antes de realizar el commit.
+
+**Files changed:**
+
+- README.md
+- docs/class-diagram.puml
+- docs/prompts-stage-3.md
+
+**Objective:**
+
+Document the four member RPCs, protocol contract, server/client execution and status codes.
+
+Update the PlantUML class diagram to represent the gRPC adapter, client, generated Protobuf classes and SearchMembers across the existing architectural layers.
+
+**Validation plan:**
+
+- Verify that the PlantUML diagram renders correctly.
+- Verify that the README describes the implemented gRPC operations.
+- Run the complete Gradle build and existing tests.
+- Review the Git staging area before committing.

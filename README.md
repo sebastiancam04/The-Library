@@ -162,3 +162,99 @@ curl -X POST http://localhost:7070/reservations/1/fulfill
 
 ---
 &copy; 2026 Diego Urrutia-Astorga, Arquitectura de Software, Universidad Católica del Norte.
+
+## gRPC API - Stage 3
+
+The Library exposes the member module through gRPC using Protocol Buffers.
+
+### Architecture and ports
+
+- REST API: http://localhost:7070
+- gRPC server: 127.0.0.1:50051
+- Protocol definition: src/main/proto/member.proto
+- Java package: cl.ucn.disc.arqsist.library.grpc
+
+Both REST and gRPC reuse the existing MemberService and persistence layer.
+
+### Available RPC operations
+
+| RPC | Request | Response | Description |
+|---|---|---|---|
+| RegisterMember | RegisterMemberRequest | MemberMessage | Registers a member |
+| ListMembers | ListMembersRequest | ListMembersReply | Lists members |
+| GetMember | GetMemberRequest | MemberMessage | Finds a member by ID |
+| SearchMembers | SearchMembersRequest | ListMembersReply | Searches by name |
+
+### Protocol Buffers messages
+
+- MemberMessage: id, name and email.
+- RegisterMemberRequest: name and email.
+- ListMembersRequest: empty message.
+- ListMembersReply: repeated MemberMessage.
+- GetMemberRequest: member ID.
+- SearchMembersRequest: name query.
+
+### SearchMembers behavior
+
+- Performs partial name matching.
+- Ignores ASCII case differences.
+- Trims leading and trailing whitespace.
+- Treats '%' and '_' as literal characters.
+- Returns results ordered by ascending member ID.
+- Returns an empty list when there are no matches.
+- Rejects blank queries with INVALID_ARGUMENT.
+
+### Running the server
+
+Start the application from PowerShell:
+
+    .\gradlew.bat run
+
+The application starts the REST API on port 7070
+and the gRPC server on port 50051.
+
+### Running the gRPC client
+
+In another PowerShell terminal:
+
+    .\gradlew.bat runClient
+
+To retrieve specific members:
+
+    .\gradlew.bat runClient --args="1 2"
+
+The client uses a five-second deadline.
+
+SearchMembers is available through MemberClient.search(String)
+and the generated gRPC stub. The current MemberClientApp
+does not expose a search command.
+
+### gRPC error handling
+
+| Condition | gRPC status |
+|---|---|
+| Successful operation | OK |
+| Member not found | NOT_FOUND |
+| Invalid argument | INVALID_ARGUMENT |
+| Invalid application state | FAILED_PRECONDITION |
+| Unexpected server error | INTERNAL |
+
+The laboratory uses plaintext gRPC on the local loopback interface.
+No authentication is implemented for the gRPC service.
+
+### Integration tests
+
+Run the member gRPC integration test:
+
+    .\gradlew.bat test --tests MemberGrpcTest
+
+Run the search acceptance tests:
+
+    .\gradlew.bat test --tests MemberSearchTest
+
+Run the full project build:
+
+    .\gradlew.bat clean build
+
+The integration tests use SQLite in memory and
+gRPC in-process transport.
