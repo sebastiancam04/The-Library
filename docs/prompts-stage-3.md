@@ -94,3 +94,32 @@ Implement the gRPC MemberClient and its command line application,
 including channel management, deadlines, protobuf conversions,
 status mapping, and connection lifecycle.
 
+
+## Commit 17 - gRPC Round Trip Integration Test
+
+**Model:** GPT-6
+
+**Exact prompt:**
+
+Comencemos con el Commit 17 del Stage 3 de The-Library. Basándonos en el documento refactor.stage-3.pdf y en la implementación actual del proyecto, analiza los problemas arquitectónicos relacionados con la ausencia de pruebas de integración entre el cliente y el servidor gRPC, sus consecuencias y plantea una solución para implementar MemberGrpcTest.
+
+Presenta la implementación completa de los archivos involucrados, respetando la arquitectura existente y utilizando una base de datos SQLite en memoria junto con el transporte gRPC in-process.
+
+Considera la validación de las operaciones de registro, listado y consulta de miembros por identificador, incluyendo el manejo de miembros inexistentes mediante NotFoundException.
+
+Explica las decisiones técnicas, el funcionamiento de InProcessServerBuilder e InProcessChannelBuilder, la administración de recursos y las diferencias entre pruebas unitarias y pruebas de integración.
+
+Establece las verificaciones necesarias para comprobar el correcto funcionamiento de la implementación y la compatibilidad con las pruebas existentes antes de realizar el commit.
+
+**Files changed:**
+
+- src/test/java/cl/ucn/disc/arqsist/library/MemberGrpcTest.java
+- docs/prompts-stage-3.md
+
+**Objective:**
+
+Implement an automated gRPC integration test using
+SQLite in-memory and in-process transport.
+
+Validate member registration, listing, retrieval by ID,
+and NOT_FOUND error mapping.
