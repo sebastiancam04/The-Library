@@ -62,4 +62,27 @@ public final class MemberService {
         }
         return member;
     }
+
+    /**
+     * Search members by a name fragment.
+     *
+     * @param query the name fragment
+     * @return matching members ordered by ID
+     * @throws IllegalArgumentException if the query is blank
+     */
+    public List<Member> search(String query) {
+        if (query == null) {
+            throw new IllegalArgumentException("Search query must not be blank");
+        }
+
+        // Remove leading and trailing whitespace.
+        String trimmedQuery = query.trim();
+
+        // An empty query is not a valid search.
+        if (trimmedQuery.isEmpty()) {
+            throw new IllegalArgumentException("Search query must not be blank");
+        }
+
+        return memberDao.searchByName(trimmedQuery);
+    }
 }

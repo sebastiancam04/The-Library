@@ -123,3 +123,41 @@ SQLite in-memory and in-process transport.
 
 Validate member registration, listing, retrieval by ID,
 and NOT_FOUND error mapping.
+
+
+## Commit 18 - Member Search RPC
+
+**Model:** GPT-6
+
+**Exact prompt:**
+
+Comencemos con el Commit 18 del Stage 3 de The-Library. Basándonos en el documento refactor.stage-3.pdf y en la arquitectura desarrollada en los commits anteriores, analiza los problemas arquitectónicos relacionados con la ausencia de búsqueda de miembros por nombre, sus consecuencias y plantea una solución para implementar el RPC SearchMembers.
+
+Desarrolla una solución completa que integre las modificaciones necesarias en member.proto, MemberDao, MemberService, MemberGrpcService y MemberClient, respetando la separación de responsabilidades entre las capas de persistencia, negocio y comunicación gRPC.
+
+La búsqueda debe cumplir los requisitos establecidos en el documento: coincidencia parcial sin distinguir mayúsculas y minúsculas ASCII, eliminación de espacios iniciales y finales, tratamiento literal de los caracteres especiales, ordenamiento ascendente por identificador, respuesta vacía cuando no existan coincidencias y manejo de consultas inválidas mediante los códigos de estado correspondientes.
+
+Presenta la implementación completa de los archivos involucrados y desarrolla MemberSearchTest utilizando SQLite en memoria y transporte gRPC in-process. Explica las decisiones técnicas, los aspectos de seguridad de la consulta SQL y los siete casos de aceptación definidos por el profesor.
+
+Establece las verificaciones necesarias para comprobar la funcionalidad, la compatibilidad con las pruebas anteriores y el cumplimiento de los requisitos de evaluación antes de realizar el commit.
+
+**Files changed:**
+
+- src/main/proto/member.proto
+- src/main/java/cl/ucn/disc/arqsist/library/dao/MemberDao.java
+- src/main/java/cl/ucn/disc/arqsist/library/service/MemberService.java
+- src/main/java/cl/ucn/disc/arqsist/library/grpc/MemberGrpcService.java
+- src/main/java/cl/ucn/disc/arqsist/library/grpc/MemberClient.java
+- src/test/java/cl/ucn/disc/arqsist/library/MemberSearchTest.java
+- docs/prompts-stage-3.md
+
+**Objective:**
+
+Implement a member search RPC across the persistence,
+service, gRPC adapter and client layers.
+
+Support literal substring matching, ASCII case-insensitive
+search, query normalization, ID ordering and status mapping.
+
+Validate the seven acceptance cases using an in-memory
+database and in-process gRPC transport.
