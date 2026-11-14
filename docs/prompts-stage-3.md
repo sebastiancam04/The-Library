@@ -68,3 +68,29 @@ Presenta la implementación completa de los archivos involucrados, explica las d
 Integrate the member gRPC server into the main application,
 preserve the existing REST API, and implement graceful
 server shutdown.
+
+
+## Commit 16 - gRPC Client and Command Line Application
+
+**Model:** GPT-6
+
+**Exact prompt:**
+
+Comencemos con el Commit 16 del Stage 3 de The-Library. Basándonos en el documento refactor.stage-3.pdf y en la implementación actual del proyecto, analiza los problemas arquitectónicos identificados, sus consecuencias y plantea una solución para desarrollar el cliente gRPC MemberClient y la aplicación de consola MemberClientApp.
+
+Presenta la implementación completa de los archivos involucrados, respetando la arquitectura existente y el contrato definido en member.proto. Considera la administración de conexiones mediante ManagedChannel, el uso de stubs, la configuración de deadlines y la conversión de respuestas y códigos de estado gRPC a los tipos del dominio.
+
+Explica las decisiones técnicas, las responsabilidades de cada componente y los conceptos fundamentales utilizados. Establece las pruebas necesarias para verificar la comunicación entre cliente y servidor, el manejo de errores y el correcto funcionamiento de los cambios antes de realizar el commit.
+
+**Files changed:**
+
+- src/main/java/cl/ucn/disc/arqsist/library/grpc/MemberClient.java
+- src/main/java/cl/ucn/disc/arqsist/library/MemberClientApp.java
+- docs/prompts-stage-3.md
+
+**Objective:**
+
+Implement the gRPC MemberClient and its command line application,
+including channel management, deadlines, protobuf conversions,
+status mapping, and connection lifecycle.
+
