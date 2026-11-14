@@ -1,3 +1,4 @@
+
 /*
  * Copyright (c) 2026. Arquitectura de Sistemas, DISC, UCN, Antofagasta.
  */
@@ -10,30 +11,29 @@ import cl.ucn.disc.arqsist.library.model.Member;
 import java.util.List;
 
 /**
- * Handles member registration and retrieval.
- * Lending operations belong to {@link LoanService}.
+ * The Member Service.
  */
 public final class MemberService {
 
     /**
-     * DAO responsible for member persistence.
+     * The Member DAO.
      */
     private final MemberDao memberDao;
 
     /**
-     * Creates the member service.
+     * The Constructor.
      *
-     * @param memberDao DAO used for member operations.
+     * @param memberDao the member DAO
      */
     public MemberService(MemberDao memberDao) {
         this.memberDao = memberDao;
     }
 
     /**
-     * Registers a new member.
+     * Register a new member.
      *
-     * @param member member to register.
-     * @return the registered member.
+     * @param member the member to register
+     * @return the registered member
      */
     public Member register(Member member) {
         memberDao.create(member);
@@ -41,11 +41,25 @@ public final class MemberService {
     }
 
     /**
-     * Returns all registered members.
-     *
-     * @return list of registered members.
+     * @return a list of all members.
      */
     public List<Member> findAll() {
         return memberDao.findAll();
+    }
+
+    /**
+     * Find a member by ID.
+     *
+     * @param id the member ID
+     * @return the member
+     * @throws NotFoundException if the member does not exist
+     */
+    public Member findById(int id) {
+        // ORMLite returns null when the row does not exist.
+        Member member = memberDao.findById(id);
+        if (member == null) {
+            throw new NotFoundException("Member not found: " + id);
+        }
+        return member;
     }
 }
